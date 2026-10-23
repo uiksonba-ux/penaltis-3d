@@ -68,7 +68,7 @@ function fire(index){if(busy)return;busy=true;const shot=turn==='kick'?index:Mat
 buttons.forEach(b=>b.addEventListener('click',()=>fire(Number(b.dataset.zone))));
 function reset(){ball.position.copyFrom(start);kicker.position.set(-.75,0,5.9);legs.forEach(l=>l.rotation.x=0);arms.forEach(a=>a.rotation.x=0);goalie.position.set(0,0,goalZ+.55);goalie.rotation.z=0}
 function finish(){busy=true;buttons.forEach(b=>b.disabled=true);message.textContent=player>cpu?'🏆 VOCÊ VENCEU!':player<cpu?'CPU VENCEU!':'🤝 EMPATE!';round.textContent='Fim da partida';restart.style.display='block'}
-function next(){if(turn==='kick'){kicks++;turn=gameMode==='kick'?'kick':'save'}else{saves++;turn=gameMode==='save'?'save':'kick'}reset();if((gameMode==='kick'&&kicks>=5)||(gameMode==='save'&&saves>=5)||(gameMode==='alternating'&&((kicks===5&&saves===5)||player>cpu+5-saves||cpu>player+5-kicks)){finish();return}busy=false;update()}
+function next(){if(turn==='kick'){kicks++;turn=gameMode==='kick'?'kick':'save'}else{saves++;turn=gameMode==='save'?'save':'kick'}reset();if((gameMode==='kick'&&kicks>=5)||(gameMode==='save'&&saves>=5)||(gameMode==='alternating'&&((kicks===5&&saves===5)||player>cpu+5-saves||cpu>player+5-kicks))){finish();return}busy=false;update()}
 function newMatch(){player=cpu=kicks=saves=0;turn=gameMode==='save'?'save':'kick';busy=false;anim=null;buttons.forEach(b=>b.disabled=false);restart.style.display='none';reset();update()}
 restart.addEventListener('click',newMatch);
 const setup=document.getElementById('setup'),country=document.getElementById('country'),mode=document.getElementById('mode'),difficultySlider=document.getElementById('difficulty');
