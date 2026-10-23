@@ -3,6 +3,16 @@
 <style>
 *{box-sizing:border-box}body{margin:0;background:#091b20;color:#fff;font:600 15px system-ui,Arial;overflow:hidden}#game{position:fixed;inset:0}canvas{display:block;touch-action:none}header{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:15px 16px;background:linear-gradient(#061a23dd,transparent);pointer-events:none}h1{font-size:17px;margin:0;letter-spacing:1px}.score{font-size:20px;background:#001923aa;padding:7px 12px;border-radius:12px}.round{font-size:12px;color:#c4e8f0}#panel{position:fixed;bottom:0;left:0;right:0;padding:14px 12px max(18px,env(safe-area-inset-bottom));background:linear-gradient(transparent,#071820 25%);text-align:center}#message{font-size:17px;min-height:28px;text-shadow:0 2px 4px #000}#choices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;max-width:690px;margin:9px auto 0}button{border:1px solid #7dcbd5;background:#123e4c;color:white;border-radius:12px;padding:12px 3px;font:700 12px system-ui;cursor:pointer;min-height:57px}button:active{transform:scale(.97);background:#287888}button:disabled{opacity:.4}#restart{display:none;background:#f4bf3c;color:#142027;padding:12px 22px;min-height:42px;border:0;margin:12px auto}#hint{font-size:11px;color:#a9c6c7;margin-top:8px}#loading{position:fixed;inset:0;background:#071820;display:grid;place-items:center;z-index:10}#loading.hidden{display:none}@media(max-width:390px){button{font-size:10px;padding:10px 1px}h1{font-size:14px}}
 </style></head><body><div id="loading">Carregando estádio 3D...</div><div id="game"></div><header><div><h1>⚽ PÊNALTIS 3D</h1><div class="round" id="round">Rodada 1 de 5</div></div><div class="score" id="score">VOCÊ 0 × 0 CPU</div></header><div id="panel"><div id="message" role="status">Escolha onde chutar!</div><div id="choices"><button data-zone="0">↖<br>Alto Esq.</button><button data-zone="1">↗<br>Alto Dir.</button><button data-zone="2">↙<br>Baixo Esq.</button><button data-zone="3">↘<br>Baixo Dir.</button><button data-zone="4">⬆<br>Centro</button></div><button id="restart">JOGAR NOVAMENTE</button><div id="hint">Toque em uma direção: o chute é automático.</div></div>
+<script>
+window.__stadiumReady=false;
+window.__showStadiumError=function(message){
+ const el=document.getElementById('loading');if(!el||window.__stadiumReady)return;
+ el.innerHTML='<div style="padding:24px;text-align:center;max-width:340px"><strong>Não foi possível iniciar o estádio.</strong><p style="font-size:13px;font-weight:400">'+String(message||'Erro de carregamento').replace(/[<>&]/g,'')+'</p><button onclick="location.reload()">TENTAR NOVAMENTE</button></div>';
+};
+window.addEventListener('error',function(e){window.__showStadiumError(e.message||'Falha no JavaScript')});
+window.addEventListener('unhandledrejection',function(e){window.__showStadiumError(String(e.reason||'Erro inesperado'))});
+setTimeout(function(){if(!window.__stadiumReady)window.__showStadiumError('O carregamento demorou demais. Tente abrir no Chrome.')},12000);
+</script>
 <script type="module">
 const loading=document.querySelector('#loading');
 const fail=(e)=>{console.error('Erro no estádio 3D:',e);loading.innerHTML='<div style="padding:25px;text-align:center"><strong>Não foi possível abrir o jogo 3D.</strong><p style="font-size:13px">Verifique a conexão e tente atualizar a página.</p><button onclick="location.reload()">TENTAR NOVAMENTE</button></div>'};
@@ -10,7 +20,7 @@ window.addEventListener('error',e=>fail(e.message));
 window.addEventListener('unhandledrejection',e=>fail(e.reason));
 let THREE;
 try { THREE=await import('https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js'); }
-catch(e){fail(e);throw e}
+catch(e){try{THREE=await import('https://esm.sh/three@0.160.1')}catch(e2){fail(e2);throw e2}}
 const container=document.querySelector('#game'), scene=new THREE.Scene();scene.background=new THREE.Color(0x102236);scene.fog=new THREE.Fog(0x17283b,55,140);
 const camera=new THREE.PerspectiveCamera(57,innerWidth/innerHeight,.1,150);camera.position.set(0,2.45,10.5);camera.lookAt(0,1.7,-9);
 const renderer=new THREE.WebGLRenderer({antialias:false,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.shadowMap.type=THREE.PCFSoftShadowMap;container.appendChild(renderer.domElement);
@@ -146,5 +156,5 @@ if(p>=1){animation=null;setTimeout(next,650)}}
 renderer.render(scene,camera)}
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.position.set(0,innerWidth<innerHeight?2.7:2.45,innerWidth<innerHeight?12.3:10.5);camera.lookAt(0,1.65,-9);camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 if(innerWidth<innerHeight){camera.position.set(0,2.7,12.3);camera.lookAt(0,1.65,-9)}
-document.querySelector('#loading').classList.add('hidden');update();requestAnimationFrame(animate);
+window.__stadiumReady=true;document.querySelector('#loading').classList.add('hidden');update();requestAnimationFrame(animate);
 </script></body></html>
