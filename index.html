@@ -74,21 +74,37 @@ const ballTexture=new THREE.CanvasTexture(ballCanvas);ballTexture.colorSpace=THR
 const ballGroup=new THREE.Group();scene.add(ballGroup);
 const ball=new THREE.Mesh(new THREE.SphereGeometry(.23,48,32),new THREE.MeshStandardMaterial({map:ballTexture,roughness:.43,metalness:0}));ball.castShadow=true;ballGroup.add(ball);
 const ballStart=new THREE.Vector3(0,.23,3.5);ballGroup.position.copy(ballStart);
-// Visible penalty taker behind the ball. Lightweight articulated 3D figure.
+// Athletic footballer with shaped anatomy, fitted kit and articulated joints.
 const striker=new THREE.Group();scene.add(striker);
-const kit=mat(0xe7bd2a),trim=mat(0x1b2c4a),skin2=mat(0xba805c),cleat=mat(0x161a20);
+const kit=mat(0xe6bd24,.83),trim=mat(0x142847,.94),skin2=mat(0xb67a52,.94),cleat=mat(0x111820,.48),hair2=mat(0x18130f,.98),sock=mat(0xe6bb23),stripe=mat(0xf5eee0);
 function limb(parent,geo,material,x,y,z){const mesh=new THREE.Mesh(geo,material);mesh.position.set(x,y,z);mesh.castShadow=true;parent.add(mesh);return mesh}
-const torso=limb(striker,new THREE.CapsuleGeometry(.32,.56,8,14),kit,0,1.38,0);
-limb(striker,new THREE.SphereGeometry(.225,16,12),skin2,0,2.22,0);
-limb(striker,new THREE.SphereGeometry(.227,16,12,0,Math.PI*2,0,Math.PI*.45),trim,0,2.29,0);
-limb(striker,new THREE.BoxGeometry(.58,.38,.3),trim,0,.94,0);
-const sArms=[],sLegs=[];
-for(const sign of [-1,1]){const shoulder=new THREE.Group();shoulder.position.set(sign*.4,1.77,0);striker.add(shoulder);
-limb(shoulder,new THREE.CapsuleGeometry(.105,.55,6,10),kit,sign*.09,-.38,0);limb(shoulder,new THREE.SphereGeometry(.115,10,8),skin2,sign*.13,-.8,0);sArms.push(shoulder);
-const hip=new THREE.Group();hip.position.set(sign*.19,.83,0);striker.add(hip);
-limb(hip,new THREE.CapsuleGeometry(.145,.58,6,10),skin2,0,-.36,0);limb(hip,new THREE.CapsuleGeometry(.125,.3,6,10),trim,0,-.77,0);limb(hip,new THREE.BoxGeometry(.24,.13,.39),cleat,0,-1.04,-.09);sLegs.push(hip);}
-striker.position.set(-.9,1.05,6.1);
-function resetStriker(){striker.position.set(-.9,1.05,6.1);striker.rotation.y=0;sArms.forEach(a=>a.rotation.x=0);sLegs.forEach(l=>l.rotation.x=0)}
+function ell(parent,material,x,y,z,sx,sy,sz){const m=limb(parent,new THREE.SphereGeometry(1,20,14),material,x,y,z);m.scale.set(sx,sy,sz);return m}
+const body=ell(striker,kit,0,1.53,0,.37,.52,.22);
+ell(striker,kit,0,1.12,0,.30,.20,.19);ell(striker,trim,0,.94,0,.32,.22,.22);
+ell(striker,skin2,0,2.02,0,.13,.14,.12);
+ell(striker,skin2,0,2.25,-.005,.225,.27,.21);
+ell(striker,hair2,0,2.45,-.025,.229,.095,.218);
+ell(striker,skin2,-.115,2.24,-.16,.032,.035,.025);ell(striker,skin2,.115,2.24,-.16,.032,.035,.025);
+const jerseyNumber=limb(striker,new THREE.PlaneGeometry(.19,.30),stripe,0,1.54,.225);jerseyNumber.rotation.y=Math.PI; // jersey marking on back
+for(let i=0;i<2;i++){const x=i===0?-.13:.13;limb(striker,new THREE.BoxGeometry(.055,.43,.012),trim,x,1.58,.221);}
+const sArms=[],sLegs=[],knees=[];
+for(const sign of [-1,1]){
+ const shoulder=new THREE.Group();shoulder.position.set(sign*.37,1.83,0);striker.add(shoulder);
+ ell(shoulder,kit,sign*.065,-.19,0,.17,.26,.16);
+ ell(shoulder,skin2,sign*.095,-.49,0,.112,.22,.108);
+ ell(shoulder,skin2,sign*.11,-.72,0,.103,.12,.083);sArms.push(shoulder);
+ const hip=new THREE.Group();hip.position.set(sign*.19,.91,0);striker.add(hip);
+ ell(hip,trim,0,-.13,0,.185,.24,.18);
+ ell(hip,skin2,0,-.42,0,.145,.28,.14);
+ const knee=new THREE.Group();knee.position.set(0,-.65,0);hip.add(knee);
+ ell(knee,skin2,0,-.075,0,.135,.13,.13);
+ ell(knee,sock,0,-.29,0,.117,.26,.116);
+ ell(knee,stripe,0,-.11,0,.123,.035,.121);
+ ell(knee,cleat,0,-.53,-.105,.145,.105,.28);
+ sLegs.push(hip);knees.push(knee);
+}
+striker.position.set(-.9,1.16,6.1);
+function resetStriker(){striker.position.set(-.9,1.16,6.1);striker.rotation.y=0;sArms.forEach(a=>a.rotation.x=0);sLegs.forEach(l=>l.rotation.x=0);knees.forEach(k=>k.rotation.x=0)}
 const zones=[[-2.7,2.2],[2.7,2.2],[-2.7,.45],[2.7,.45],[0,1.3]];
 let turn='kick',kickCount=0,saveCount=0,player=0,cpu=0,busy=false,animation=null;
 const message=document.querySelector('#message'),score=document.querySelector('#score'),round=document.querySelector('#round'),restart=document.querySelector('#restart'),buttons=[...document.querySelectorAll('[data-zone]')];
@@ -109,9 +125,9 @@ restart.addEventListener('click',()=>{kickCount=saveCount=player=cpu=0;turn='kic
 function animate(t){requestAnimationFrame(animate);if(animation){const a=animation,p=Math.min(1,(t-a.start)/a.duration);
 const run=Math.min(1,p/.34);striker.position.z=6.1-run*2.35;striker.position.x=-.9+run*.5;
 const stride=Math.sin(run*17)*.42*(1-run*.35);
-sLegs[0].rotation.x=stride;sLegs[1].rotation.x=-stride;
+sLegs[0].rotation.x=stride;sLegs[1].rotation.x=-stride;knees[0].rotation.x=Math.max(0,stride)*.55;knees[1].rotation.x=Math.max(0,-stride)*.55;
 sArms[0].rotation.x=-stride*.65;sArms[1].rotation.x=stride*.65;
-if(p>.28&&p<.55)sLegs[1].rotation.x=-Math.sin((p-.28)/.27*Math.PI)*1.05;
+if(p>.28&&p<.55){sLegs[1].rotation.x=-Math.sin((p-.28)/.27*Math.PI)*1.05;knees[1].rotation.x=Math.sin((p-.28)/.27*Math.PI)*.75;}
 const flight=Math.min(1,Math.max(0,(p-.35)/.49)),e=1-Math.pow(1-flight,2);ballGroup.position.set(ballStart.x+(a.target[0]-ballStart.x)*e,ballStart.y+(a.target[1]-ballStart.y)*e+Math.sin(Math.PI*flight)*1.05,ballStart.z+(goalZ-.15-ballStart.z)*e);ballGroup.rotation.x+=.12;
 const diveTarget=zones[a.dive];const dp=Math.min(1,Math.max(0,(p-.12)/.58));arms[0].rotation.z=-.72-.45*dp;arms[1].rotation.z=.72+.45*dp;keeper.position.x=diveTarget[0]*dp*.9;keeper.position.y=(diveTarget[1]>1.5?.5:.12)*Math.sin(dp*Math.PI*.8);keeper.rotation.z=-Math.sign(diveTarget[0])*.55*dp;
 if(p>=.82&&!a.handled){a.handled=true;if(a.success){if(a.shooter==='player')player++;else cpu++}score.textContent='VOCÊ '+player+' × '+cpu+' CPU';message.textContent=a.success?'⚽ GOOOL!':'🧤 DEFENDEU!'}
