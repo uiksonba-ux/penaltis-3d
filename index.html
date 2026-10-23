@@ -4,11 +4,31 @@
 *{box-sizing:border-box}body{margin:0;background:#091b20;color:#fff;font:600 15px system-ui,Arial;overflow:hidden}#game{position:fixed;inset:0}canvas{display:block;touch-action:none}header{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:15px 16px;background:linear-gradient(#061a23dd,transparent);pointer-events:none}h1{font-size:17px;margin:0;letter-spacing:1px}.score{font-size:20px;background:#001923aa;padding:7px 12px;border-radius:12px}.round{font-size:12px;color:#c4e8f0}#panel{position:fixed;bottom:0;left:0;right:0;padding:14px 12px max(18px,env(safe-area-inset-bottom));background:linear-gradient(transparent,#071820 25%);text-align:center}#message{font-size:17px;min-height:28px;text-shadow:0 2px 4px #000}#choices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;max-width:690px;margin:9px auto 0}button{border:1px solid #7dcbd5;background:#123e4c;color:white;border-radius:12px;padding:12px 3px;font:700 12px system-ui;cursor:pointer;min-height:57px}button:active{transform:scale(.97);background:#287888}button:disabled{opacity:.4}#restart{display:none;background:#f4bf3c;color:#142027;padding:12px 22px;min-height:42px;border:0;margin:12px auto}#hint{font-size:11px;color:#a9c6c7;margin-top:8px}#loading{position:fixed;inset:0;background:#071820;display:grid;place-items:center;z-index:10}#loading.hidden{display:none}@media(max-width:390px){button{font-size:10px;padding:10px 1px}h1{font-size:14px}}
 #setup{position:fixed;z-index:8;inset:0;background:#071820ed;display:flex;align-items:center;justify-content:center;padding:22px}#setup.hidden{display:none}.menu{width:min(420px,100%);padding:22px;border:1px solid #437481;border-radius:20px;background:#102d39;box-shadow:0 15px 50px #0008}.menu h2{margin:0 0 12px}.menu label{display:block;margin:14px 0 6px;font-size:13px}.menu select,.menu input{width:100%;padding:12px;background:#173e4a;color:white;border:1px solid #53808d;border-radius:9px}.menu button{width:100%;margin-top:18px;background:#e5ba3d;color:#101c21;font-size:16px}.menu small{color:#bed0d4}#menuBtn{position:fixed;top:66px;right:12px;z-index:3;min-height:32px;padding:6px 12px;background:#193c4b}
 </style></head><body><div id="loading">Carregando estádio 3D...</div><div id="game"></div><div id="setup"><div class="menu"><h2>⚽ Soccer.io • Pênaltis 3D</h2><small>Modo de jogo inspirado no projeto Soccer.io, usando Babylon.js</small><label for="country">Seleção</label><select id="country"><option value="br">🇧🇷 Brasil</option><option value="ar">🇦🇷 Argentina</option><option value="fr">🇫🇷 França</option><option value="pt">🇵🇹 Portugal</option><option value="de">🇩🇪 Alemanha</option></select><label for="mode">Modo de jogo</label><select id="mode"><option value="alternating">Disputa completa (chutar e defender)</option><option value="kick">Somente cobrar pênaltis</option><option value="save">Somente defender pênaltis</option></select><label for="difficulty">Dificuldade: <span id="difficultyValue">50</span>/100</label><input id="difficulty" type="range" min="1" max="100" value="50"><button id="startBtn">COMEÇAR PARTIDA</button></div></div><button id="menuBtn">⚙ Menu</button><header><div><h1>⚽ PÊNALTIS 3D</h1><div class="round" id="round">Rodada 1 de 5</div></div><div class="score" id="score">VOCÊ 0 × 0 CPU</div></header><div id="panel"><div id="message" role="status">Escolha onde chutar!</div><div id="choices"><button data-zone="0">↖<br>Alto Esq.</button><button data-zone="1">↗<br>Alto Dir.</button><button data-zone="2">↙<br>Baixo Esq.</button><button data-zone="3">↘<br>Baixo Dir.</button><button data-zone="4">⬆<br>Centro</button></div><button id="restart">JOGAR NOVAMENTE</button><div id="hint">Toque em uma direção: o chute é automático.</div></div>
-<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script>
+window.__gameBooted=false;
+window.__gameError=function(msg){
+ const el=document.getElementById('loading');
+ if(!el||window.__gameBooted)return;
+ el.classList.remove('hidden');
+ el.innerHTML='<div style="padding:24px;text-align:center;max-width:350px"><strong>Não foi possível carregar o jogo</strong><p style="font-size:13px;font-weight:400;overflow-wrap:anywhere">'+String(msg).replace(/[<>&]/g,'')+'</p><button onclick="location.reload()">Tentar novamente</button></div>';
+};
+window.addEventListener('error',e=>window.__gameError(e.message||'Erro no carregamento'));
+window.addEventListener('unhandledrejection',e=>window.__gameError(e.reason?.message||e.reason||'Falha no carregamento'));
+setTimeout(()=>{if(!window.__gameBooted)window.__gameError('Tempo esgotado (15 segundos). Verifique a conexão ou envie uma foto desta tela.')},15000);
+</script>
 <script>
 (function(){
+ const sources=['https://cdn.babylonjs.com/babylon.js','https://cdn.jsdelivr.net/npm/babylonjs@7.54.3/babylon.js'];
+ let i=0;
+ function load(){if(i>=sources.length){window.__gameError('Não foi possível baixar Babylon.js de duas fontes.');return}
+ const script=document.createElement('script');script.src=sources[i++];script.onload=()=>{if(window.BABYLON)window.__startBabylonGame();else load()};script.onerror=load;document.head.appendChild(script)}
+ window.__loadBabylon=load;
+})();
+</script>
+<script>
+window.__startBabylonGame=function(){
 const loading=document.getElementById('loading'),container=document.getElementById('game');
-function fail(e){loading.classList.remove('hidden');loading.innerHTML='<div style="text-align:center;padding:22px">Erro ao abrir Babylon.js<p style="font-size:12px">'+String(e).replace(/[<>&]/g,'')+'</p><button onclick="location.reload()">Tentar novamente</button></div>'}
+function fail(e){window.__gameError(e&&e.message?e.message:e)}
 try{
 if(!window.BABYLON)throw Error('Motor Babylon.js indisponível. Verifique a internet.');
 const B=BABYLON,canvas=document.createElement('canvas');canvas.style.cssText='width:100%;height:100%;display:block;touch-action:none';container.appendChild(canvas);
@@ -56,7 +76,8 @@ difficultySlider.addEventListener('input',()=>document.getElementById('difficult
 document.getElementById('startBtn').addEventListener('click',()=>{gameMode=mode.value;difficulty=Number(difficultySlider.value);const colors={br:'#f6d43c',ar:'#80b7dd',fr:'#162e67',pt:'#bd273d',de:'#eeeeee'};navy.albedoColor=B.Color3.FromHexString(colors[country.value]);setup.classList.add('hidden');newMatch()});
 document.getElementById('menuBtn').addEventListener('click',()=>{busy=true;anim=null;setup.classList.remove('hidden')});
 engine.runRenderLoop(()=>{if(anim){const p=Math.min(1,(performance.now()-anim.time)/1850),run=Math.min(1,p/.32),stride=Math.sin(run*15)*.5;kicker.position.z=5.9-run*2.2;kicker.position.x=-.75+run*.5;legs[0].rotation.x=stride;legs[1].rotation.x=-stride;arms[0].rotation.x=-stride*.6;arms[1].rotation.x=stride*.6;const flight=Math.max(0,Math.min(1,(p-.32)/.49)),e=1-Math.pow(1-flight,2),target=zones[anim.shot];ball.position.set(target[0]*e,.24+(target[1]-.24)*e+Math.sin(Math.PI*flight)*.8,3.5+(goalZ-3.5)*e);ball.rotation.x+=.09;const dp=Math.max(0,Math.min(1,(p-.12)/.6)),def=zones[anim.def];goalie.position.x=def[0]*dp*.8;goalie.position.y=Math.sin(dp*Math.PI*.8)*.35;goalie.rotation.z=-Math.sign(def[0])*.5*dp;if(p>.84&&!anim.scored){anim.scored=true;if(anim.success){if(turn==='kick')player++;else cpu++}score.textContent='VOCÊ '+player+' × '+cpu+' CPU';message.textContent=anim.success?'⚽ GOOOL!':'🧤 DEFENDEU!'}if(p>=1){anim=null;setTimeout(next,650)}}scene.render()});
-window.addEventListener('resize',()=>engine.resize());update();loading.classList.add('hidden');
+window.addEventListener('resize',()=>engine.resize());update();window.__gameBooted=true;loading.classList.add('hidden');
 }catch(e){console.error(e);fail(e)}
-})();
+};
+window.__loadBabylon();
 </script></body></html>
