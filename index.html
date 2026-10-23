@@ -58,8 +58,21 @@ arms[0].rotation.z=-.72;arms[1].rotation.z=.72;
 part(new THREE.SphereGeometry(.15,12,10),gloves,-.85,1.82,.06);part(new THREE.SphereGeometry(.15,12,10),gloves,.85,1.82,.06);
 const jerseyNumber=part(new THREE.BoxGeometry(.24,.29,.012),white,0,1.5,-.33);
 keeper.position.set(0,0,goalZ+.6);
-const ballGroup=new THREE.Group();scene.add(ballGroup);const ball=new THREE.Mesh(new THREE.SphereGeometry(.23,24,16),white);ball.castShadow=true;ballGroup.add(ball);
-for(let i=0;i<8;i++){const a=i*Math.PI*2/8;const patch=new THREE.Mesh(new THREE.CircleGeometry(.066,5),dark);patch.position.set(Math.cos(a)*.18,Math.sin(a)*.18,.14);ballGroup.add(patch)}
+// Yellow match ball with red and navy curved panel motifs, inspired by the reference.
+const ballCanvas=document.createElement('canvas');ballCanvas.width=1024;ballCanvas.height=512;
+const bc=ballCanvas.getContext('2d');bc.fillStyle='#ffd32b';bc.fillRect(0,0,1024,512);
+for(let row=0;row<3;row++){for(let col=0;col<6;col++){
+const cx=col*180+(row%2)*90-45,cy=85+row*170;
+bc.save();bc.translate(cx,cy);bc.rotate((col+row)*.75);
+for(let arm=0;arm<3;arm++){bc.save();bc.rotate(arm*Math.PI*2/3);
+bc.beginPath();bc.moveTo(-12,-9);bc.bezierCurveTo(-16,-43,-27,-65,-35,-78);bc.lineTo(-15,-75);bc.bezierCurveTo(-1,-51,4,-28,9,-10);bc.closePath();bc.fillStyle='#b71821';bc.fill();
+bc.beginPath();bc.moveTo(-7,-12);bc.bezierCurveTo(-11,-42,-18,-61,-23,-70);bc.strokeStyle='#20213b';bc.lineWidth=5;bc.stroke();
+bc.beginPath();bc.moveTo(13,-12);bc.bezierCurveTo(19,-36,22,-52,25,-62);bc.strokeStyle='#f47924';bc.lineWidth=5;bc.stroke();bc.restore();}
+bc.restore();}}
+bc.strokeStyle='rgba(116,82,20,.23)';bc.lineWidth=2;for(let y=0;y<512;y+=85){bc.beginPath();bc.moveTo(0,y);for(let x=0;x<=1024;x+=8)bc.lineTo(x,y+7*Math.sin(x/42+y));bc.stroke();}
+const ballTexture=new THREE.CanvasTexture(ballCanvas);ballTexture.colorSpace=THREE.SRGBColorSpace;ballTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+const ballGroup=new THREE.Group();scene.add(ballGroup);
+const ball=new THREE.Mesh(new THREE.SphereGeometry(.23,48,32),new THREE.MeshStandardMaterial({map:ballTexture,roughness:.43,metalness:0}));ball.castShadow=true;ballGroup.add(ball);
 const ballStart=new THREE.Vector3(0,.23,3.5);ballGroup.position.copy(ballStart);
 const zones=[[-2.7,2.2],[2.7,2.2],[-2.7,.45],[2.7,.45],[0,1.3]];
 let turn='kick',kickCount=0,saveCount=0,player=0,cpu=0,busy=false,animation=null;
