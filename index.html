@@ -76,16 +76,21 @@ const ball=new THREE.Mesh(new THREE.SphereGeometry(.23,48,32),new THREE.MeshStan
 const ballStart=new THREE.Vector3(0,.23,3.5);ballGroup.position.copy(ballStart);
 // Athletic footballer with shaped anatomy, fitted kit and articulated joints.
 const striker=new THREE.Group();scene.add(striker);
-const kit=mat(0xe6bd24,.83),trim=mat(0x142847,.94),skin2=mat(0xb67a52,.94),cleat=mat(0x111820,.48),hair2=mat(0x18130f,.98),sock=mat(0xe6bb23),stripe=mat(0xf5eee0);
+const kit=mat(0x142f69,.83),trim=mat(0x102452,.94),skin2=mat(0xb67a52,.94),cleat=mat(0xf4e7d8,.48),hair2=mat(0x2b2018,.98),sock=mat(0x142f69),stripe=mat(0xd52140);
 function limb(parent,geo,material,x,y,z){const mesh=new THREE.Mesh(geo,material);mesh.position.set(x,y,z);mesh.castShadow=true;parent.add(mesh);return mesh}
 function ell(parent,material,x,y,z,sx,sy,sz){const m=limb(parent,new THREE.SphereGeometry(1,20,14),material,x,y,z);m.scale.set(sx,sy,sz);return m}
 const body=ell(striker,kit,0,1.53,0,.37,.52,.22);
+// Central red shirt band, narrow white trim, and shoulder accents.
+limb(striker,new THREE.BoxGeometry(.21,.78,.015),stripe,0,1.54,.224);
+for(const x of [-.135,.135])limb(striker,new THREE.BoxGeometry(.018,.78,.017),mat(0xe9e5e0),x,1.54,.233);
 ell(striker,kit,0,1.12,0,.30,.20,.19);ell(striker,trim,0,.94,0,.32,.22,.22);
 ell(striker,skin2,0,2.02,0,.13,.14,.12);
 ell(striker,skin2,0,2.25,-.005,.225,.27,.21);
 ell(striker,hair2,0,2.45,-.025,.229,.095,.218);
+// Short textured dark hairstyle.
+for(let i=0;i<16;i++){const a=i*2.399;const r=.04+.14*Math.sqrt(i/16);ell(striker,hair2,Math.cos(a)*r,2.49+(i%3)*.013,Math.sin(a)*r,.045,.065,.045)}
 ell(striker,skin2,-.115,2.24,-.16,.032,.035,.025);ell(striker,skin2,.115,2.24,-.16,.032,.035,.025);
-const jerseyNumber=limb(striker,new THREE.PlaneGeometry(.19,.30),stripe,0,1.54,.225);jerseyNumber.rotation.y=Math.PI; // jersey marking on back
+const jerseyNumber=limb(striker,new THREE.PlaneGeometry(.19,.30),mat(0xf7f4ee),0,1.54,.235);jerseyNumber.rotation.y=Math.PI; // jersey marking on back
 for(let i=0;i<2;i++){const x=i===0?-.13:.13;limb(striker,new THREE.BoxGeometry(.055,.43,.012),trim,x,1.58,.221);}
 const sArms=[],sLegs=[],knees=[];
 for(const sign of [-1,1]){
