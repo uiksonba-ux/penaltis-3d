@@ -96,7 +96,7 @@ ell(striker,hair2,0,2.45,-.025,.229,.095,.218);
 // Short textured dark hairstyle.
 for(let i=0;i<16;i++){const a=i*2.399;const r=.04+.14*Math.sqrt(i/16);ell(striker,hair2,Math.cos(a)*r,2.49+(i%3)*.013,Math.sin(a)*r,.045,.065,.045)}
 ell(striker,skin2,-.115,2.24,-.16,.032,.035,.025);ell(striker,skin2,.115,2.24,-.16,.032,.035,.025);
-const jerseyNumber=limb(striker,new THREE.PlaneGeometry(.19,.30),mat(0xf7f4ee),0,1.54,.235);jerseyNumber.rotation.y=Math.PI; // jersey marking on back
+const strikerNumber=limb(striker,new THREE.PlaneGeometry(.19,.30),mat(0xf7f4ee),0,1.54,.235);strikerNumber.rotation.y=Math.PI; // jersey marking on back
 for(let i=0;i<2;i++){const x=i===0?-.13:.13;limb(striker,new THREE.BoxGeometry(.055,.43,.012),trim,x,1.58,.221);}
 const sArms=[],sLegs=[],knees=[];
 for(const sign of [-1,1]){
